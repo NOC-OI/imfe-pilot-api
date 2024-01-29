@@ -1,0 +1,14 @@
+#!/bin/bash
+#builds a new env file using variables from the CI/environment
+echo JASMIN_API_URL=$JASMIN_API_URL > .env
+echo JASMIN_TOKEN=$JASMIN_TOKEN >> .env
+echo JASMIN_SECRET=$JASMIN_SECRET >> .env
+echo "HASH_TOKEN='$HASH_TOKEN'" >> .env
+echo DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432 >> .env
+echo VITE_SERVER_ENDPOINT=$VITE_SERVER_ENDPOINT >> .env
+echo VITE_ORCID_CLIENT_ID=$VITE_ORCID_CLIENT_ID >> .env
+echo VITE_ORCID_CLIENT_SECRET=$VITE_ORCID_CLIENT_SECRET >> .env
+echo VITE_ORCID_CLIENT_REDIRECT_URI=$VITE_ORCID_CLIENT_REDIRECT_URI >> .env
+echo VITE_365_CLIENT_ID=$VITE_365_CLIENT_ID >> .env
+echo VITE_365_CLIENT_SECRET=$VITE_365_CLIENT_SECRET >> .env
+echo VITE_365_REDIRECT_URI=$VITE_365_REDIRECT_URI >> .env

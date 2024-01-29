@@ -1,0 +1,112 @@
+default:
+  image: python:3.9
+
+test-job:
+  stage: test
+  tags:
+    - docker
+  script:
+    - apt-get -y update
+    - apt-get install -y --no-install-recommends libgdal-dev
+    - pip install -r requirements.txt
+    - make pre-commit
+
+build-job-oracle-arm:
+  stage: build
+  tags:
+    - shell
+    - oracle
+    - arm
+  script:
+    - ./make_env.sh
+    - docker-compose build
+  environment:
+    name: Oracle-ARM
+
+#build-job-oracle-x86:
+#  stage: build
+#  tags:
+#    - shell
+#    - oracle
+#    - x86
+#  script:
+#    - ./make_env.sh
+#    - docker-compose build
+#  environment:
+#    name: Oracle-x86
+
+build-job-jasmin:
+  stage: build
+  tags:
+    - shell
+    - jasmin
+  script:
+    - ./make_env.sh
+    - docker-compose build
+  environment:
+    name: JASMIN
+
+deploy-job-oracle-arm:
+  stage: deploy
+  tags:
+    - shell
+    - oracle
+    - arm
+  rules: #only deploy on the master branch
+    - if: '$CI_COMMIT_BRANCH == "master"'
+  script:
+    - ./make_env.sh
+    - CONTAINER_NAME=$CI_REGISTRY/nocacuk/ocean-informatics/imfepilot/api_calculations_use_cases:latest
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker tag docker-repo.bodc.me/oceaninfo/imfe-pilot/api_calculations_use_cases:latest $CONTAINER_NAME
+    - docker push $CONTAINER_NAME
+    - echo $ORCID_CONFIG > orcid.json
+    - docker-compose stop && docker-compose up -d
+  environment:
+    name: Oracle-ARM
+
+#deploy-job-oracle-x86:
+#  stage: deploy
+#  tags:
+#    - shell
+#    - oracle
+#    - x86
+#  rules: #only deploy on the master branch
+#    - if: '$CI_COMMIT_BRANCH == "master"'
+#  script:
+#    - ./make_env.sh
+#    - CONTAINER_NAME=uk-london-1.ocir.io/lrl8vbuxj1ma/api_calculations_use_cases:latest
+#    #- docker login -u $DOCKER_USER -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+#    - docker push $CONTAINER_NAME
+#    - echo $ORCID_CONFIG > orcid.json
+#    - ssh web "rm -rf ~/api && mkdir -p ~/api && cp .env api && cp orcid.json api"
+    #copy everything because we mount it into our volume
+#    - scp -r * web:/home/gitlab-runner/api
+#    - ssh web "docker pull $CONTAINER_NAME"
+    #for docker-compose to work the container must be using the BODC name
+#    - ssh web "docker tag $CONTAINER_NAME docker-repo.bodc.me/oceaninfo/imfe-pilot/api_calculations_use_cases:latest"
+#    - ssh web "cd api && docker-compose stop && docker-compose up -d"
+#  environment:
+#    name: Oracle-x86
+
+deploy-job-jasmin:
+  stage: deploy
+  tags:
+    - shell
+    - jasmin
+  rules: #only deploy on the master branch
+    - if: '$CI_COMMIT_BRANCH == "master"'
+  script:
+    - ./make_env.sh
+    #note: we must have done a "docker login docker-repo.bodc.me" manually on the build and web VMs before this pipeline can run
+    - CONTAINER_NAME=docker-repo.bodc.me/oceaninfo/imfe-pilot/api_calculations_use_cases:latest
+    #- docker login -u $DOCKER_USER -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+    - docker push $CONTAINER_NAME
+    - echo $ORCID_CONFIG > orcid.json
+    - ssh web "rm -rf ~/api && mkdir -p ~/api && cp .env api && cp orcid.json api"
+    #copy everything because we mount it into our volume
+    - scp -r * web:/home/gitlab-runner/api
+    - ssh web "docker pull $CONTAINER_NAME"
+    - ssh web "cd api && docker-compose stop && docker-compose up -d"
+  environment:
+    name: JASMIN

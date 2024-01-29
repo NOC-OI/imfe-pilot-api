@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    # command: bash -c "chmod u+x install.sh && ./install.sh"
+    command: bash -c "uvicorn api.fast:app --host 0.0.0.0 --port 8081 --reload"
+    volumes:
+      - .:/code
+    ports:
+      - "8081:8081"
+    image: docker-repo.bodc.me/oceaninfo/imfe-pilot/api_calculations_use_cases:latest

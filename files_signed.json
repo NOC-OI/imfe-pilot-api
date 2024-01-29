@@ -1,0 +1,6 @@
+{
+    "Bathymetry": {
+        "2018 Bathymetry Survey": {"url": "layers/bathymetry/shipborne_2018/shipborne_2018.tif"}
+    },
+    "Sidescan": {"2012": {"url": "layers/sidescan/sidescan_2012/sidescan_2012.tif"}}
+}
